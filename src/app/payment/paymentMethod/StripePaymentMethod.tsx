@@ -6,62 +6,81 @@ import { withCheckout, CheckoutContextProps } from '../../checkout';
 import { TranslatedString } from '../../locale';
 
 import HostedWidgetPaymentMethod, { HostedWidgetPaymentMethodProps } from './HostedWidgetPaymentMethod';
+import StripeV3CardValidation from './StripeV3CardValidation';
 
 export type StripePaymentMethodProps = Omit<HostedWidgetPaymentMethodProps, 'containerId'>;
 
 export interface StripeOptions {
     alipay?: StripeElementOptions;
     card: StripeElementOptions;
+    cardCvc: StripeElementOptions;
+    cardExpiry: StripeElementOptions;
+    cardNumber: StripeElementOptions;
     iban: StripeElementOptions;
     idealBank: StripeElementOptions;
 }
 interface WithCheckoutStripePaymentMethodProps {
     storeUrl: string;
 }
-
-export enum StripeV3PaymentMethodType {
+export enum StripeElementType {
     alipay = 'alipay',
     card = 'card',
+    cardCvc = 'cardCvc',
+    cardExpiry = 'cardExpiry',
+    cardNumber = 'cardNumber',
     iban = 'iban',
     idealBank = 'idealBank',
 }
-
 const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithCheckoutStripePaymentMethodProps> = ({
       initializePayment,
       method,
       storeUrl,
       ...rest
   }) => {
-    const paymentMethodType = method.id as StripeV3PaymentMethodType;
-    const additionalStripeV3Classes = paymentMethodType !== StripeV3PaymentMethodType.alipay ? 'optimizedCheckout-form-input widget--stripev3' : '';
+    const paymentMethodType = method.id as StripeElementType;
+    const additionalStripeV3Classes = paymentMethodType !== StripeElementType.alipay ? 'optimizedCheckout-form-input widget--stripev3' : '';
     const containerId = `stripe-${paymentMethodType}-component-field`;
-
     const initializeStripePayment = useCallback(async (options: PaymentInitializeOptions) => {
         const classes = {
             base: 'form-input optimizedCheckout-form-input',
         };
-
         const stripeOptions: StripeOptions = {
-            [StripeV3PaymentMethodType.card]: {
+            [StripeElementType.card]: {
                 classes,
             },
-            [StripeV3PaymentMethodType.iban]: {
+            [StripeElementType.cardCvc]: {
+                classes,
+                placeholder: 'CVV',
+            },
+            [StripeElementType.cardExpiry]: {
+                classes,
+            },
+            [StripeElementType.cardNumber]: {
+                classes,
+                placeholder: 'Enter Card Number',
+            },
+            [StripeElementType.iban]: {
                 ...{ classes },
                 supportedCountries: ['SEPA'],
             },
-            [StripeV3PaymentMethodType.idealBank]: {
+            [StripeElementType.idealBank]: {
                 classes,
             },
         };
-
         return initializePayment({
             ...options,
             stripev3: {
                 containerId,
-                options: stripeOptions[paymentMethodType],
+                options: { cardCvcElementOptions: { containerId: 'stripe-cvc-element', options: stripeOptions[StripeElementType.cardCvc] },
+                    cardExpiryElementOptions: { containerId: 'stripe-expiry-element', options: stripeOptions[StripeElementType.cardExpiry] },
+                    cardNumberElementOptions: { containerId: 'stripe-number-element', options: stripeOptions[StripeElementType.cardNumber] },
             },
         });
     }, [initializePayment, containerId, paymentMethodType]);
+
+    const cardCustomRender = () => {
+        return <StripeV3CardValidation />;
+    };
 
     return <>
         <HostedWidgetPaymentMethod
@@ -71,6 +90,8 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
             hideContentWhenSignedOut
             initializePayment={ initializeStripePayment }
             method={ method }
+            shouldRenderCustomInstrument={ false }
+            validateCustomRender={ cardCustomRender }
         />
         {
             method.id === 'iban' &&
@@ -89,7 +110,7 @@ function mapFromCheckoutProps(
     if (!config) {
         return null;
     }
-
+    
     return {
         storeUrl: config.links.siteLink,
     };

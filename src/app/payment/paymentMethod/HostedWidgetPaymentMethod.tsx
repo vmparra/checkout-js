@@ -34,6 +34,8 @@ export interface HostedWidgetPaymentMethodProps {
     shouldShow?: boolean;
     shouldShowDescriptor?: boolean;
     shouldShowEditButton?: boolean;
+    shouldRenderCustomInstrument?: boolean;
+    validateCustomRender?(): React.ReactNode;
     validateInstrument?(shouldShowNumberField: boolean): React.ReactNode;
     deinitializeCustomer?(options: CustomerRequestOptions): Promise<CheckoutSelectors>;
     deinitializePayment(options: PaymentRequestOptions): Promise<CheckoutSelectors>;
@@ -159,6 +161,7 @@ class HostedWidgetPaymentMethod extends Component<
             additionalContainerClassName,
             shouldHideInstrumentExpiryDate = false,
             shouldShow = true,
+            shouldRenderCustomInstrument = false,
         } = this.props;
 
         const {
@@ -203,7 +206,21 @@ class HostedWidgetPaymentMethod extends Component<
 
                     { this.renderPaymentDescriptorIfAvailable() }
 
-                    <div
+                    { (shouldRenderCustomInstrument) ? <div
+                        className={ classNames(
+                            'widget',
+                            `widget--${method.id}`,
+                            'payment-widget'
+                        ) }
+                        id={ containerId }
+                        style={ {
+                            display: (hideContentWhenSignedOut && isSignInRequired && !isSignedIn) || !shouldShowCreditCardFieldset || hideWidget ? 'none' : undefined,
+                        } }
+                        tabIndex={ -1 }
+                    >
+                        { this.getValidateCustomRender() }
+                    </div>
+                    : <div
                         className={ classNames(
                             'widget',
                             `widget--${method.id}`,
@@ -215,7 +232,7 @@ class HostedWidgetPaymentMethod extends Component<
                             display: (hideContentWhenSignedOut && isSignInRequired && !isSignedIn) || !shouldShowCreditCardFieldset || hideWidget ? 'none' : undefined,
                         } }
                         tabIndex={ -1 }
-                    />
+                    /> }
 
                     { isInstrumentFeatureAvailableProp && <StoreInstrumentFieldset
                         instrumentId={ selectedInstrumentId }
@@ -262,6 +279,15 @@ class HostedWidgetPaymentMethod extends Component<
                 shouldShowNumberField={ shouldShowNumberField }
             />
         );
+    }
+
+    getValidateCustomRender(): ReactNode | undefined {
+        const {
+            validateCustomRender,
+        } = this.props;
+        if (validateCustomRender) {
+            return validateCustomRender();
+        }
     }
 
     private getSelectedBankAccountInstrument(isAddingNewCard: boolean, selectedInstrument: PaymentInstrument): AccountInstrument | undefined {
