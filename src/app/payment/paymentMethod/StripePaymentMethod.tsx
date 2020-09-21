@@ -3,10 +3,10 @@ import React, { useCallback, FunctionComponent } from 'react';
 import { Omit } from 'utility-types';
 
 import { withCheckout, CheckoutContextProps } from '../../checkout';
-import { TranslatedString } from '../../locale';
+import {  withLanguage, TranslatedString, WithLanguageProps } from '../../locale';
 
 import HostedWidgetPaymentMethod, { HostedWidgetPaymentMethodProps } from './HostedWidgetPaymentMethod';
-import StripeV3CardValidation from './StripeV3CardValidation';
+import StripeV3CustomCardForm from './StripeV3CustomCardForm';
 
 export type StripePaymentMethodProps = Omit<HostedWidgetPaymentMethodProps, 'containerId'>;
 
@@ -31,15 +31,29 @@ export enum StripeElementType {
     iban = 'iban',
     idealBank = 'idealBank',
 }
-const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithCheckoutStripePaymentMethodProps> = ({
+const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithCheckoutStripePaymentMethodProps & WithLanguageProps> = ({
       initializePayment,
+      language,
       method,
       storeUrl,
       ...rest
   }) => {
+    const shouldRenderCustom = true;
     const paymentMethodType = method.id as StripeElementType;
     const additionalStripeV3Classes = paymentMethodType !== StripeElementType.alipay ? 'optimizedCheckout-form-input widget--stripev3' : '';
     const containerId = `stripe-${paymentMethodType}-component-field`;
+    const validateInitializeOptions = useCallback((shouldRenderCustomComponents: boolean, stripeOptions: StripeOptions) => {
+        if (shouldRenderCustomComponents && method.id === 'card') {
+            return {
+                cardCvcElementOptions: { containerId: 'stripe-cvc-element', options: stripeOptions[StripeElementType.cardCvc] },
+                cardExpiryElementOptions: { containerId: 'stripe-expiry-element', options: stripeOptions[StripeElementType.cardExpiry] },
+                cardNumberElementOptions: { containerId: 'stripe-number-element', options: stripeOptions[StripeElementType.cardNumber] },
+            };
+        }
+
+        return stripeOptions[paymentMethodType];
+    }, [paymentMethodType, method.id]);
+
     const initializeStripePayment = useCallback(async (options: PaymentInitializeOptions) => {
         const classes = {
             base: 'form-input optimizedCheckout-form-input',
@@ -50,14 +64,14 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
             },
             [StripeElementType.cardCvc]: {
                 classes,
-                placeholder: 'CVV',
+                placeholder: language.translate('payment.credit_card_cvv_label'),
             },
             [StripeElementType.cardExpiry]: {
                 classes,
             },
             [StripeElementType.cardNumber]: {
                 classes,
-                placeholder: 'Enter Card Number',
+                placeholder: language.translate('payment.credit_card_text'),
             },
             [StripeElementType.iban]: {
                 ...{ classes },
@@ -67,19 +81,16 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
                 classes,
             },
         };
+
         return initializePayment({
             ...options,
-            stripev3: {
-                containerId,
-                options: { cardCvcElementOptions: { containerId: 'stripe-cvc-element', options: stripeOptions[StripeElementType.cardCvc] },
-                    cardExpiryElementOptions: { containerId: 'stripe-expiry-element', options: stripeOptions[StripeElementType.cardExpiry] },
-                    cardNumberElementOptions: { containerId: 'stripe-number-element', options: stripeOptions[StripeElementType.cardNumber] },
-            },
+            stripev3: { containerId,
+                options: validateInitializeOptions(shouldRenderCustom, stripeOptions) },
         });
-    }, [initializePayment, containerId, paymentMethodType]);
+    }, [initializePayment, containerId, validateInitializeOptions, shouldRenderCustom, language]);
 
-    const cardCustomRender = () => {
-        return <StripeV3CardValidation />;
+    const CustomCardRender = () => {
+        return <StripeV3CustomCardForm />;
     };
 
     return <>
@@ -90,8 +101,8 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
             hideContentWhenSignedOut
             initializePayment={ initializeStripePayment }
             method={ method }
-            shouldRenderCustomInstrument={ false }
-            validateCustomRender={ cardCustomRender }
+            shouldRenderCustomInstrument={ shouldRenderCustom }
+            validateCustomRender={ CustomCardRender }
         />
         {
             method.id === 'iban' &&
@@ -110,9 +121,9 @@ function mapFromCheckoutProps(
     if (!config) {
         return null;
     }
-    
+
     return {
         storeUrl: config.links.siteLink,
     };
 }
-export default withCheckout(mapFromCheckoutProps)(StripePaymentMethod);
+export default withLanguage(withCheckout(mapFromCheckoutProps)(StripePaymentMethod));
