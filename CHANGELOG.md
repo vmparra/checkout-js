@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.83.4-alpha.1600817535249](https://github.com/bigcommerce/checkout-js/compare/v1.83.3...v1.83.4-alpha.1600817535249) (2020-09-22)
+
+
+### Features
+
+* **payments:** INT-3086 added dynamic custom render fields on Stripe V3 ([9717e7e](https://github.com/bigcommerce/checkout-js/commit/9717e7e1953fcc487942e503113f6382e359edbc))
+* **payments:** INT-3086 added optional custom render fields on Stripe V3 ([1600e40](https://github.com/bigcommerce/checkout-js/commit/1600e403a7ac61facfe66630029483d31ad45d8e))
+* **payments:** INT-3086 styled custom card form  on Stripe V3 ([c8c298c](https://github.com/bigcommerce/checkout-js/commit/c8c298c73987d6876c9f88863421800bdfb0b4ca))
+
 ### [1.83.3](https://github.com/bigcommerce/checkout-js/compare/v1.83.2...v1.83.3) (2020-09-18)
 
 
