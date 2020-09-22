@@ -20,6 +20,10 @@
     flex-basis: 65%;
 }
 
+.form-field--stripe-ccNumber {
+    flex-basis: 100%;
+}
+
 .form-field--ccNumber--hasExpiryDate {
     flex-basis: 50%;
 }
@@ -43,7 +47,7 @@
     order: 5;
 }
 
-.form-field--postalCode {
+.form-field--stripe-postalCode {
     flex-basis: 40%;
     order: 5;
 }

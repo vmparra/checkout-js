@@ -38,16 +38,17 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
       storeUrl,
       ...rest
   }) => {
-    const shouldRenderCustom = true;
+    const shouldRenderCustom = method.initializationData.cardFormIndividualElements;
     const paymentMethodType = method.id as StripeElementType;
     const additionalStripeV3Classes = paymentMethodType !== StripeElementType.alipay ? 'optimizedCheckout-form-input widget--stripev3' : '';
     const containerId = `stripe-${paymentMethodType}-component-field`;
     const validateInitializeOptions = useCallback((shouldRenderCustomComponents: boolean, stripeOptions: StripeOptions) => {
         if (shouldRenderCustomComponents && method.id === 'card') {
             return {
-                cardCvcElementOptions: { containerId: 'stripe-cvc-element', options: stripeOptions[StripeElementType.cardCvc] },
-                cardExpiryElementOptions: { containerId: 'stripe-expiry-element', options: stripeOptions[StripeElementType.cardExpiry] },
-                cardNumberElementOptions: { containerId: 'stripe-number-element', options: stripeOptions[StripeElementType.cardNumber] },
+                cardCvcElementOptions: { containerId: 'stripe-cvc-element', ...stripeOptions[StripeElementType.cardCvc] },
+                cardExpiryElementOptions: { containerId: 'stripe-expiry-element', ...stripeOptions[StripeElementType.cardExpiry] },
+                cardNumberElementOptions: { containerId: 'stripe-number-element', ...stripeOptions[StripeElementType.cardNumber] },
+                zipCodeElementOptions: { containerId: 'stripe-postal-code' },
             };
         }
 
@@ -89,7 +90,7 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
         });
     }, [initializePayment, containerId, validateInitializeOptions, shouldRenderCustom, language]);
 
-    const CustomCardRender = () => {
+    const renderCustomCardForm = () => {
         return <StripeV3CustomCardForm />;
     };
 
@@ -102,7 +103,7 @@ const StripePaymentMethod: FunctionComponent<StripePaymentMethodProps & WithChec
             initializePayment={ initializeStripePayment }
             method={ method }
             shouldRenderCustomInstrument={ shouldRenderCustom }
-            validateCustomRender={ CustomCardRender }
+            validateCustomRender={ renderCustomCardForm }
         />
         {
             method.id === 'iban' &&
