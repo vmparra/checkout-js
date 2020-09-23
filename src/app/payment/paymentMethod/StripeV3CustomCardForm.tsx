@@ -4,14 +4,13 @@ import React from 'react';
 import { withLanguage, TranslatedString, WithLanguageProps } from '../../locale';
 import { IconHelp, IconLock } from '../../ui/icon';
 import { TooltipTrigger } from '../../ui/tooltip';
-
-import CreditCardCodeTooltip from '../../payment/creditCard/CreditCardCodeTooltip';
+import { CreditCardCodeTooltip } from '../creditCard';
 
 const StripeV3CustomCardForm: React.FunctionComponent<WithLanguageProps> = ({language}) => (
     <div className="form-ccFields">
         <div className={ classNames(
             'form-field',
-            'form-field--stripe-ccNumber',
+            'form-field--stripe-ccNumber'
             ) }
         >
             <label className="form-label optimizedCheckout-form-label" htmlFor="stripe-number-element">
@@ -40,9 +39,9 @@ const StripeV3CustomCardForm: React.FunctionComponent<WithLanguageProps> = ({lan
             <label className="form-label optimizedCheckout-form-label" htmlFor="stripe-cvc-element">
                 <TranslatedString id="payment.credit_card_cvv_label" />
                 <TooltipTrigger
-                placement="top-start"
-                tooltip={ <CreditCardCodeTooltip /> }
-            >
+                    placement="top-start"
+                    tooltip={ <CreditCardCodeTooltip /> }
+                >
                 <span className="has-tip">
                     <IconHelp />
                 </span>
@@ -54,7 +53,7 @@ const StripeV3CustomCardForm: React.FunctionComponent<WithLanguageProps> = ({lan
                     'form-input',
                     'optimizedCheckout-form-input',
                     'has-icon',
-                    'widget-input--stripev3',
+                    'widget-input--stripev3'
                 ) }
                 data-cse="SecurityCode"
                 id="stripe-cvc-element"
