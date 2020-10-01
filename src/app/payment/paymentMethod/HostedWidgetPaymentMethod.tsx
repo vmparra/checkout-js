@@ -220,7 +220,7 @@ class HostedWidgetPaymentMethod extends Component<
         );
     }
 
-    getValidateInstrument(): ReactNode | undefined {
+    getValidateInstrument(): ReactNode {
         const {
             hideVerificationFields,
             instruments,
@@ -264,10 +264,6 @@ class HostedWidgetPaymentMethod extends Component<
             renderCustomPaymentForm,
         } = this.props;
 
-        if ((hideContentWhenSignedOut && isSignInRequired && !isSignedIn) || !shouldShowCreditCardFieldset || hideWidget) {
-            return null;
-        }
-
         return (
             <div
                 className={ classNames(
@@ -277,6 +273,9 @@ class HostedWidgetPaymentMethod extends Component<
                     shouldRenderCustomInstrument ? '' : additionalContainerClassName
                 ) }
                 id={ containerId }
+                style={ {
+                    display: (hideContentWhenSignedOut && isSignInRequired && !isSignedIn) || !shouldShowCreditCardFieldset || hideWidget ? 'none' : undefined,
+                } }
                 tabIndex={ -1 }
             >
                 { shouldRenderCustomInstrument && renderCustomPaymentForm && renderCustomPaymentForm() }
